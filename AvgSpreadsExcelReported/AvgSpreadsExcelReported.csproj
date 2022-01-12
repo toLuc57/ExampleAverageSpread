@@ -1,0 +1,128 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{C56EFA1E-1755-4DE3-A8A8-D24B991D7130}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>AvgSpreadsExcelReported</RootNamespace>
+    <AssemblyName>AvgSpreadsExcelReported</AssemblyName>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="CT.AssemblyVer">
+      <HintPath>..\lib\CT.AssemblyVer.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Collections">
+      <HintPath>..\lib\CT.Collections.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Console">
+      <HintPath>..\lib\CT.Console.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Data">
+      <HintPath>..\lib\CT.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Data.Sql">
+      <HintPath>..\lib\CT.Data.Sql.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.DateTime">
+      <HintPath>..\lib\CT.DateTime.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Encoding">
+      <HintPath>..\lib\CT.Encoding.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Extensions">
+      <HintPath>..\lib\CT.Extensions.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.FileSystem">
+      <HintPath>..\lib\CT.FileSystem.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Hash">
+      <HintPath>..\lib\CT.Hash.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Heartbeat">
+      <HintPath>..\lib\CT.Heartbeat.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.IO">
+      <HintPath>..\lib\CT.IO.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Logging">
+      <HintPath>..\lib\CT.Logging.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.OS">
+      <HintPath>..\lib\CT.OS.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Settings">
+      <HintPath>..\lib\CT.Settings.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Trading">
+      <HintPath>..\lib\CT.Trading.dll</HintPath>
+    </Reference>
+    <Reference Include="CT.Zip">
+      <HintPath>..\lib\CT.Zip.dll</HintPath>
+    </Reference>
+    <Reference Include="MtApi, Version=1.0.43.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\MtApi.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data, Version=6.9.12.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.6.9.12\lib\net45\MySql.Data.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=8.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="InformationDB\DBSpread.cs" />
+    <Compile Include="InformationTable\Averagespreads.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
