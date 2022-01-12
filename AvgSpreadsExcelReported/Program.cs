@@ -21,7 +21,6 @@ namespace AvgSpreadsExcelReported
             logConsole.LogAlert("---");
             Ini programIni = Ini.ProgramIniFile;
             DBSpread readDB = new DBSpread(programIni);
-            readDB.ShowTimeSpan();
             logConsole.LogAlert("---");
 
             readDB.Query();
