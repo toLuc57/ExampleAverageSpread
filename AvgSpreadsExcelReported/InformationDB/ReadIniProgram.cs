@@ -13,9 +13,9 @@ namespace AvgSpreadsExcelReported.InformationDB
         public static string connectionSTR;
         public static List<TimeSpan[]> allTimeSpans;
         public static string[] allTimeSpansName = {"AsianTradingSession","LondonTradingSession","USTradingSession" };
-        public static List<string> GBEBroker;
-        public static List<string> OtherBroker = null;
-
+        public static List<string> listGBEBroker;
+        public static List<string> otherBroker = null;
+        public static bool exportNonGBE;
 
         public static void Read(Ini Iniprogram)
         {
@@ -26,8 +26,12 @@ namespace AvgSpreadsExcelReported.InformationDB
             allTimeSpans.Add(ParseSessionTime(Iniprogram.ReadString("Settings", allTimeSpansName[1])));
             allTimeSpans.Add(ParseSessionTime(Iniprogram.ReadString("Settings", allTimeSpansName[2])));
 
-            GBEBroker = new List<string>(Iniprogram.ReadSection("GBEBrokers"));
-            OtherBroker = new List<string>(Iniprogram.ReadSection("OtherBrokers"));
+            exportNonGBE = Iniprogram.ReadBool("Settings", "ExportNonGBE");
+            listGBEBroker = new List<string>(Iniprogram.ReadSection("GBEBrokers"));
+            if(exportNonGBE == true)
+            {
+                otherBroker = new List<string>(Iniprogram.ReadSection("OtherBrokers"));
+            }
         }
         private static TimeSpan[] ParseSessionTime(string timeString)
         {
@@ -55,5 +59,6 @@ namespace AvgSpreadsExcelReported.InformationDB
                 Console.WriteLine("{0}: {1}-{2}", allTimeSpansName[j++], i[0],i[1]);
             }
         }
+        
     }
 }

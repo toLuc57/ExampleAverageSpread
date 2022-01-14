@@ -108,7 +108,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="InformationDB\DBSpread.cs" />
+    <Compile Include="InformationDB\FormatRowEcxel.cs" />
+    <Compile Include="InformationDB\FormatShellEcxel.cs" />
     <Compile Include="InformationDB\ReadIniProgram.cs" />
+    <Compile Include="InformationDB\ValueBrokerOfSymbol.cs" />
     <Compile Include="InformationTable\Averagespreads.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

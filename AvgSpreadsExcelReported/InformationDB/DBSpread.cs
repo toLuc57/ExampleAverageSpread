@@ -12,9 +12,8 @@ namespace AvgSpreadsExcelReported.InformationDB
 {
     class DBSpread : ILogSource 
     {
-        IDatabase database;
-        ITable<Averagespreads> tAveragespreads;
-
+        private static IDatabase database;
+        private static ITable<Averagespreads> tAveragespreads;
 
         public string LogSourceName
         {
@@ -29,6 +28,9 @@ namespace AvgSpreadsExcelReported.InformationDB
             ReadIniProgram.Read(programIni);
             database = Connector.ConnectDatabase(ReadIniProgram.connectionSTR, DbConnectionOptions.AllowCreate);
             tAveragespreads = database.GetTable<Averagespreads>(TableFlags.AllowCreate);
+
+            GetSymbolsAndBrokers();
+            Query();
         }
 
         public void QueryAll()
@@ -46,18 +48,18 @@ namespace AvgSpreadsExcelReported.InformationDB
             this.LogAlert("===============================Done===============================");
         }
 
-        private void Query(TimeSpan[] parameter, int j)
+        private void Query(List<string> listBrokers,TimeSpan[] parameter, int j)
         {
             DateTime startTime = new DateTime(2018, 7, 2);
             startTime = startTime.Add(parameter[0]);
             DateTime endTime = new DateTime(2018, 7, 2);
             endTime = endTime.Add(parameter[1]);
 
-            this.LogAlert("======================= {0} ============================",ReadIniProgram.allTimeSpansName[j]);
-            this.LogAlert("\t{0}",startTime);
-            this.LogAlert("\t{0}", endTime);
-            
-            foreach (var eachBroker in ReadIniProgram.GBEBroker)
+            //this.LogAlert("======================= {0} ============================", ReadIniProgram.allTimeSpansName[j]);
+            //this.LogAlert("\t{0}", startTime);
+            //this.LogAlert("\t{0}", endTime);
+
+            foreach (var eachBroker in listBrokers)
             {
                 Search search = Search.FieldGreaterOrEqual(nameof(Averagespreads.TimeStamp), startTime) &
                                 Search.FieldSmallerOrEqual(nameof(Averagespreads.TimeStamp), endTime) & 
@@ -65,8 +67,8 @@ namespace AvgSpreadsExcelReported.InformationDB
 
                 List<Averagespreads> list = (List<Averagespreads>)tAveragespreads.GetStructs(search);
 
-                this.LogAlert("\t=== BrokerName: {0} ===",eachBroker);
-                if(list != null && list.Count > 0)
+                this.LogAlert("\t=== BrokerName: {0} ===", eachBroker);
+                if (list != null && list.Count > 0)
                 {
                     this.LogAlert("\t\t Symbol\t\tAvg\t\tCount");
                 }
@@ -85,19 +87,93 @@ namespace AvgSpreadsExcelReported.InformationDB
                 foreach (var row in result)
                 {
                     this.LogAlert("\t\t {0}\t\t{1}\t\t{2}", row.Symbol, row.Avarage, row.Count);
+                    if (FormatShellEcxel.list[j].Exists(par => par.symbolName == row.Symbol))
+                    {
+                        FormatShellEcxel.list[j].Find(par => par.symbolName == row.Symbol).brokers.
+                            Add(new ValueBrokerOfSymbol(eachBroker, row.Avarage));
+                    }
+                    else
+                    {
+                        FormatShellEcxel.list[j].Add(new FormatRowEcxel(row.Symbol, new ValueBrokerOfSymbol(eachBroker, row.Avarage)));
+                    }
                 }
                 this.LogAlert("\t=== End BrokerName: {0} ===", eachBroker);
             }
-            this.LogAlert("=============================== Done ===============================");
+            this.LogAlert("===============================<yellow> Done <default>===============================");
         }
         public void Query()
         {
             int j = -1;
             foreach(var i in ReadIniProgram.allTimeSpans)
             {
-                Query(i,++j);
+                Query(ReadIniProgram.listGBEBroker,i,++j);
+            }
+            if(ReadIniProgram.otherBroker != null && ReadIniProgram.otherBroker.Count != 0)
+            {
+                j = -1;
+                foreach (var i in ReadIniProgram.allTimeSpans)
+                {
+                    Query(ReadIniProgram.otherBroker, i, ++j);
+                }
+            }
+            
+        }
+        private static void GetSymbolsAndBrokers()
+        {
+            var list = tAveragespreads.GetStructs().GroupBy(par => par.BrokerName);
+            foreach (var i in list)
+            {
+                FormatShellEcxel.columnsName.Add(i.Key);
+            }
+            list = tAveragespreads.GetStructs().GroupBy(par => par.Symbol);
+            foreach (var i in list)
+            {
+                FormatShellEcxel.rowsName.Add(i.Key);
+            }
+
+            if (ReadIniProgram.exportNonGBE == true && (ReadIniProgram.otherBroker.Count == 0 || ReadIniProgram.otherBroker == null))
+            {
+                ReadIniProgram.otherBroker = FormatShellEcxel.columnsName;
+                
+                foreach (var i in ReadIniProgram.listGBEBroker)
+                {
+                    ReadIniProgram.otherBroker.Remove(i);
+                }
             }
         }
-        
+        public void GetExcel()
+        {
+            string informationColumns = "\t";
+            foreach (var str in FormatShellEcxel.columnsName)
+            {
+                informationColumns += str + "\t";
+            }
+            this.LogAlert(informationColumns);
+      
+            for (int i = 0; i < ReadIniProgram.allTimeSpans.Count; ++i)
+            {
+                this.LogAlert("-------------{0}---------------", ReadIniProgram.allTimeSpans[i]);
+                foreach (var eachRow in FormatShellEcxel.list[i])
+                {
+                    string informationValues = eachRow.symbolName + ": ";
+                    foreach (var eachColunmName in FormatShellEcxel.columnsName)
+                    {
+                        var value = eachRow.brokers.Where(par => par.brokerName == eachColunmName).Select(par => par.value).FirstOrDefault();
+
+                        if (value == eachRow.GetMinValue())
+                        {
+                            informationValues += "<yellow>" + Math.Round(value, 5) + "<default>\t";
+                        }
+                        else
+                        {
+                            informationValues += Math.Round(value, 5) + "\t";
+                        }
+
+
+                    }
+                    this.LogAlert(informationValues);
+                }
+            }
+        }
     }
 }
