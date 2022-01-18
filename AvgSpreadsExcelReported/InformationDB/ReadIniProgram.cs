@@ -16,7 +16,8 @@ namespace AvgSpreadsExcelReported.InformationDB
         public static List<string> listGBEBroker;
         public static List<string> otherBroker = null;
         public static bool exportNonGBE;
-
+        public static List<string> outTables;
+        
         public static void Read(Ini Iniprogram)
         {
             connectionSTR = Iniprogram.ReadString("Settings", "DatabaseConnection");
@@ -32,6 +33,8 @@ namespace AvgSpreadsExcelReported.InformationDB
             {
                 otherBroker = new List<string>(Iniprogram.ReadSection("OtherBrokers"));
             }
+            outTables = new List<string>(Iniprogram.ReadSection("OutputTables"));
+            
         }
         private static TimeSpan[] ParseSessionTime(string timeString)
         {

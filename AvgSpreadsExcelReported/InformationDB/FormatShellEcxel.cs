@@ -8,6 +8,8 @@ namespace AvgSpreadsExcelReported.InformationDB
 {
     class FormatShellEcxel 
     {
+        public static DateTime date = new DateTime(2018, 12, 3);
+
         public static List<string> rowsName = new List<string>();
         public static List<string> columnsName = new List<string>();
 

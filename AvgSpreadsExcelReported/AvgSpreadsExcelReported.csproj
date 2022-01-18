@@ -110,9 +110,12 @@
     <Compile Include="InformationDB\DBSpread.cs" />
     <Compile Include="InformationDB\FormatRowEcxel.cs" />
     <Compile Include="InformationDB\FormatShellEcxel.cs" />
+    <Compile Include="InformationDB\OutputTableOfBroker.cs" />
     <Compile Include="InformationDB\ReadIniProgram.cs" />
     <Compile Include="InformationDB\ValueBrokerOfSymbol.cs" />
     <Compile Include="InformationTable\Averagespreads.cs" />
+    <Compile Include="InformationTable\Symbols.cs" />
+    <Compile Include="InformationTable\WriteTableDB.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

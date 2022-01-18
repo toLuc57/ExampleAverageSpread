@@ -10,7 +10,7 @@ namespace AvgSpreadsExcelReported.InformationDB
     {
         public string brokerName;
         public double value;
-
+        public bool isMin = false;
         public ValueBrokerOfSymbol(string brokerName, double value)
         {
             this.brokerName = brokerName;
