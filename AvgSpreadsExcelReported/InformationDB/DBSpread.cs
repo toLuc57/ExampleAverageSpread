@@ -38,7 +38,7 @@ namespace AvgSpreadsExcelReported.InformationDB
                 listOutputTables.Add(new OutputTableOfBroker()
                 {
                     name = nameBroker,
-                    table = database.GetTable<WriteTableDB>(TableFlags.AllowCreate,nameTable)                    
+                    table = database.GetTable<LiveQuote>(TableFlags.AllowCreate,nameTable)                    
                 });
             }
 
@@ -174,27 +174,29 @@ namespace AvgSpreadsExcelReported.InformationDB
             for (int i = 0; i < ReadIniProgram.allTimeSpans.Count; ++i)
             {
                 this.LogAlert("-------------{0}---------------", ReadIniProgram.allTimeSpans[i]);
-                foreach (var eachRow in FormatShellEcxel.list[i])
+                foreach (string eachRowName in FormatShellEcxel.rowsName)
                 {
-                    string informationValues = eachRow.symbolName + ": ";
+                    string informationValues = eachRowName + ": ";
+                    var eachRow = FormatShellEcxel.list[i].Where(par => par.symbolName.Equals(eachRowName)).FirstOrDefault();
                     bool getYellowFont = true;
-                    foreach (var eachColunmName in FormatShellEcxel.columnsName)
+                    foreach (string eachColunmName in FormatShellEcxel.columnsName)
                     {
                         var cell = eachRow.brokers.Where(par => par.brokerName == eachColunmName).FirstOrDefault();
                         if(cell == null)
                         {
+                            informationValues += "null \t";
                             continue;
                         }
                         double value = cell.value;
                         if (getYellowFont && value == eachRow.GetMinValue())
                         {
-                            informationValues += "<yellow>" + Math.Round(value, 5) + "<default>\t";
+                            informationValues += "<yellow>" + Math.Round(value, 5) + "<default> \t";
                             cell.isMin = true;
                             getYellowFont = false;
                         }
                         else
                         {
-                            informationValues += Math.Round(value, 5) + "\t";
+                            informationValues += Math.Round(value, 5) + " \t";
                         }
 
                         if (ReadIniProgram.listGBEBroker.Contains(cell.brokerName))
@@ -202,27 +204,15 @@ namespace AvgSpreadsExcelReported.InformationDB
                             var updateTable = listOutputTables.Where(par => par.name.Equals(cell.brokerName)).
                                                                                     Select(par => par.table).First();
                             
-                            if(updateTable.Exist(nameof(WriteTableDB.Symbol), eachRow.symbolName))
+                            if(updateTable.Exist(nameof(LiveQuote.Symbol), eachRow.symbolName))
                             {
-                                var updateRow = updateTable.GetStruct(nameof(WriteTableDB.Symbol), eachRow.symbolName);
+                                var updateRow = updateTable.GetStruct(nameof(LiveQuote.Symbol), eachRow.symbolName);
                                 if(updateRow.SpreadAvg > value)
                                 {
                                     updateRow.SpreadAvg = value;
                                     updateRow.TimeStamp = DateTime.Now;
                                     updateTable.Update(updateRow);                                    
                                 }
-                            }
-                            else
-                            {
-
-                                WriteTableDB insertRow = new WriteTableDB()
-                                {
-                                    TimeStamp = DateTime.Now,
-                                    BrokerName = cell.brokerName,
-                                    Symbol = eachRow.symbolName,
-                                    SpreadAvg = value
-                                };
-                                var value1 =  updateTable.Insert(insertRow);
                             }
                         }
                     }

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace AvgSpreadsExcelReported.InformationTable
 {
     [Table]
-    public struct WriteTableDB
+    public struct LiveQuote
     {
         [Field (Flags = FieldFlags.ID)]
         public long ID;

@@ -11,6 +11,6 @@ namespace AvgSpreadsExcelReported.InformationDB
     public struct OutputTableOfBroker
     {
         public string name;
-        public ITable<WriteTableDB> table;
+        public ITable<LiveQuote> table;
     }
 }

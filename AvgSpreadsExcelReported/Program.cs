@@ -28,7 +28,9 @@ namespace AvgSpreadsExcelReported
 
 
             readDB.GetExcel();
-            
+
+            FormatShellEcxel.CreateExcelFile();
+
             logConsole.LogAlert("Done");
             Console.ReadLine();
         }
