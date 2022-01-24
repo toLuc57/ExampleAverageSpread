@@ -1,4 +1,5 @@
-﻿using OfficeOpenXml;
+﻿using CT;
+using OfficeOpenXml;
 using OfficeOpenXml.Style;
 using OfficeOpenXml.Table;
 using System;
@@ -12,20 +13,53 @@ namespace AvgSpreadsExcelReported.InformationDB
 {
     class FormatShellEcxel 
     {
-        public static DateTime date = new DateTime(2018, 12, 3);
+        public DateTime date = new DateTime(2018, 12, 3);
+        private string fileName;
+        public List<string> rowsName = new List<string>();
+        public List<string> columnsName = new List<string>();
 
-        public static List<string> rowsName = new List<string>();
-        public static List<string> columnsName = new List<string>();
-
-        private static List<FormatRowEcxel> sheet1 = new List<FormatRowEcxel>();
-        private static List<FormatRowEcxel> sheet2 = new List<FormatRowEcxel>();
-        private static List<FormatRowEcxel> sheet3 = new List<FormatRowEcxel>();
-
-        public static List<FormatRowEcxel>[] list = new List<FormatRowEcxel>[] { sheet1, sheet2, sheet3 };
-
-        public static void CreateExcelFile(Stream stream = null)
+        public List<FormatRowEcxel>[] list = new List<FormatRowEcxel>[] 
+            {
+                new List<FormatRowEcxel>(),
+                new List<FormatRowEcxel>(),
+                new List<FormatRowEcxel>()
+            };
+        public FormatShellEcxel()
         {
-            var file = new FileInfo("myWorkbook.xlsx");
+            fileName = "AverageSpreadsReport_" + date.Year + "." + date.Month + "." + date.Day;
+
+            Ini programIni = Ini.ProgramIniFile;
+            DBSpread readDB = new DBSpread(programIni,this);
+            //logConsole.LogAlert("---");
+
+            //readDB.Query();
+            //logConsole.LogAlert("---");
+
+            readDB.GetExcel();
+
+            CreateExcelFile();
+        }
+
+        public FormatShellEcxel(DateTime date)
+        {
+            this.date = date;
+            fileName = "AverageSpreadsReport_" + date.Year + "." + date.Month + "." + date.Day;
+
+            Ini programIni = Ini.ProgramIniFile;
+            DBSpread readDB = new DBSpread(programIni,this);
+            //logConsole.LogAlert("---");
+
+            //readDB.Query();
+            //logConsole.LogAlert("---");
+
+            readDB.GetExcel();
+
+            CreateExcelFile();
+        }
+
+        public void CreateExcelFile()
+        {
+            var file = new FileInfo("reports//"+ fileName + ".xlsx");
             using (var excelPackage = new ExcelPackage(file))
             {
                 List<string> listHeaderName = new List<string>();
@@ -50,13 +84,20 @@ namespace AvgSpreadsExcelReported.InformationDB
                     int countRowsEqual0 = rowsName.Count == 0 ? 0 : 1;
                     int countColumnsEqual0 = columnsName.Count == 0 ? 0 : 1;
 
-                    worksheet.Cells["a1:p2"].Merge = true;
-                    worksheet.Cells["a1:p2"].Style.Font.Bold = true;
-                    worksheet.Cells["a1:p2"].Style.Font.UnderLine = true;
-                    worksheet.Cells["a1:p2"].Style.Font.Size = 14;
-                    worksheet.Cells["a1:p2"].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-                    worksheet.Cells["a1:p2"].Style.VerticalAlignment = ExcelVerticalAlignment.Center;
+                    worksheet.DefaultColWidth = 12.33;
+                    
                     worksheet.Cells["a1"].Value = "Average Spread " + date.ToShortDateString() + " " + listHeaderName.ElementAt(k) + " Session";
+                    worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].Merge = true;
+                    worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].
+                        Style.Font.Bold = true;
+                    worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].
+                        Style.Font.UnderLine = true;
+                    worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].
+                        Style.Font.Size = 14;
+                    worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].
+                        Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 1 + ReadIniProgram.listGBEBroker.Count + 1].
+                        Style.VerticalAlignment = ExcelVerticalAlignment.Center;
 
                     worksheet.Cells[4, 2, 4, 2 + columnsName.Count - countColumnsEqual0].Merge = true;
                     worksheet.Cells[4, 2, 4, 2 + columnsName.Count].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
@@ -67,7 +108,7 @@ namespace AvgSpreadsExcelReported.InformationDB
                     worksheet.Cells["a5"].Style.Border.BorderAround(ExcelBorderStyle.Thin);
                     worksheet.Cells["a6"].LoadFromCollection(rowsName);
                     worksheet.Cells[5, 1, 5 + rowsName.Count, 1].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
-
+                    // Show Broker's Name in Brokers
                     for (int i = 0; i < columnsName.Count; ++i)
                     {
                         string brokerColumnName = columnsName.ElementAt(i);
@@ -76,13 +117,8 @@ namespace AvgSpreadsExcelReported.InformationDB
 
                         worksheet.Cells[5, i + 2].Style.Border.BorderAround(ExcelBorderStyle.Thin);
                     }
-
-                    worksheet.Cells[5, 2, 5 + rowsName.Count, 2 + columnsName.Count - countColumnsEqual0].
-                                    Style.Border.BorderAround(ExcelBorderStyle.Thick);
-                    int countGBEBrokers = ReadIniProgram.listGBEBroker.Count;
-                    worksheet.Cells[6, 2 + countGBEBrokers, 6 + rowsName.Count - countRowsEqual0, 2 + countGBEBrokers].
-                                    Style.Border.Left.Style = ExcelBorderStyle.Thick;
-
+                    
+                    //Show value (double) in each cell
                     for (int i = 0; i < rowsName.Count; ++i)
                     {
                         string symbolNameInExcel = worksheet.Cells[i + 6, 1].Value.ToString();
@@ -90,14 +126,14 @@ namespace AvgSpreadsExcelReported.InformationDB
                                                 Select(par => par.brokers).FirstOrDefault();
                         worksheet.Cells[i + 6, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
                         worksheet.Cells[i + 6, 1].Style.Font.Bold = true;
-                        worksheet.Cells["A:P"].AutoFitColumns(12.33);
-
+                        
                         for (int j = 0; j < columnsName.Count; ++j)
                         {
                             string brokerNameInExcel = worksheet.Cells[5, 2 + j].Value.ToString();
                             var informationCell = listBrokers.Where(par => par.brokerName.Equals(brokerNameInExcel)).
                                                             Select(par => new { isMin = par.isMin, value = par.value }).FirstOrDefault();
-
+                            worksheet.Cells[i + 6, 2 + j].Style.Border.BorderAround(ExcelBorderStyle.Hair);
+                            worksheet.Cells[i + 6, 2 + j].Style.Border.Left.Style = ExcelBorderStyle.Thin;
                             if (informationCell != null)
                             {
                                 worksheet.Cells[i + 6, 2 + j].Style.Numberformat.Format = "0.00";
@@ -111,8 +147,99 @@ namespace AvgSpreadsExcelReported.InformationDB
                             }
                         }
                     }
-                }               
+                    worksheet.Cells[5, 2, 5 + rowsName.Count, 2 + columnsName.Count - countColumnsEqual0].
+                                    Style.Border.BorderAround(ExcelBorderStyle.Thick);
+                    int countGBEBrokers = ReadIniProgram.listGBEBroker.Count;
+                    worksheet.Cells[5, 2 + countGBEBrokers, 6 + rowsName.Count - countRowsEqual0, 2 + countGBEBrokers].
+                                    Style.Border.Left.Style = ExcelBorderStyle.Thick;
 
+                    //Show GBEBrokers
+                    int indexWriteSymbol2nd = 3 + columnsName.Count;
+                    worksheet.Cells[5, indexWriteSymbol2nd].Value = "Symbol";
+                    worksheet.Cells[5, indexWriteSymbol2nd].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[5, indexWriteSymbol2nd].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+
+                    worksheet.Cells[4, indexWriteSymbol2nd + 1].Value = "XCore vs Xcore";
+                    worksheet.Cells[4, indexWriteSymbol2nd + 1, 4, indexWriteSymbol2nd + ReadIniProgram.listGBEBroker.Count].
+                        Style.Border.BorderAround(ExcelBorderStyle.Thick);
+                    worksheet.Cells[4, indexWriteSymbol2nd + 1, 4, indexWriteSymbol2nd + ReadIniProgram.listGBEBroker.Count].
+                        Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                    worksheet.Cells[4, indexWriteSymbol2nd + 1, 4, indexWriteSymbol2nd + ReadIniProgram.listGBEBroker.Count].Merge = true;
+
+                    int count = 0;
+                    foreach (var eachGBEBorker in ReadIniProgram.listGBEBroker)
+                    {
+                        worksheet.Cells[5, indexWriteSymbol2nd + (++count)].Value = eachGBEBorker;
+                        worksheet.Cells[5, indexWriteSymbol2nd + count].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                        worksheet.Cells[5, indexWriteSymbol2nd + count].Style.Font.Bold = true;
+                        worksheet.Cells[5, indexWriteSymbol2nd + count].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                    }
+                    
+                    List<FormatRowEcxel> listOfGBE = new List<FormatRowEcxel>();
+                    foreach (var eachGBEBrokers in ReadIniProgram.listGBEBroker)
+                    {
+                        var temporaryList = list[k].Where(par =>
+                        {
+                            if (par.brokers.Find(par1 => par1.brokerName.Equals(eachGBEBrokers)) != null)
+                            {
+                                return true;
+                            }
+                            return false;
+                        });
+                        foreach (var eachSymbol in temporaryList)
+                        {
+                            if (!listOfGBE.Contains(eachSymbol))
+                            {
+                                listOfGBE.Add(eachSymbol);
+                            }
+                        }
+                    }
+                    count = 0;
+                    foreach (var row in rowsName)
+                    {
+                        var cellsOfSymbol = listOfGBE.Where(par => par.symbolName.Equals(row)).FirstOrDefault();
+                        if (cellsOfSymbol != null)
+                        {
+                            worksheet.Cells[6 + count, indexWriteSymbol2nd].Value = cellsOfSymbol.symbolName;
+                            worksheet.Cells[6 + count, indexWriteSymbol2nd].Style.Font.Bold = true;
+                            worksheet.Cells[6 + count, indexWriteSymbol2nd].Style.HorizontalAlignment = ExcelHorizontalAlignment.Center;
+                            worksheet.Cells[6 + count, indexWriteSymbol2nd].Style.Border.BorderAround(ExcelBorderStyle.Thin);
+                            int count1 = 1;
+                            int indexRowOfMin = -1;
+                            int indexColumnOfMin = -1;
+                            double min = double.MaxValue; 
+                            foreach(var eachGBEB in ReadIniProgram.listGBEBroker)
+                            {
+                                var informationCell = cellsOfSymbol.brokers.Where(par => par.brokerName.Equals(eachGBEB)).FirstOrDefault();
+                                worksheet.Cells[6 + count, indexWriteSymbol2nd + count1].Style.HorizontalAlignment = 
+                                    ExcelHorizontalAlignment.Center;
+                                worksheet.Cells[6 + count, indexWriteSymbol2nd + count1].Style.Border.BorderAround(ExcelBorderStyle.Hair);
+                                worksheet.Cells[6 + count, indexWriteSymbol2nd + count1].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                                if (informationCell != null)
+                                {
+                                    worksheet.Cells[6 + count, indexWriteSymbol2nd + count1].Style.Numberformat.Format = "0.00";                                    
+                                    worksheet.Cells[6 + count, indexWriteSymbol2nd + count1].Value = informationCell.value;
+                                    if(min > informationCell.value)
+                                    {
+                                        min = informationCell.value;
+                                        indexRowOfMin = 6 + count;
+                                        indexColumnOfMin = indexWriteSymbol2nd + count1;
+                                    }
+                                }
+                                ++count1;
+                            }
+                            if (indexRowOfMin > -1)
+                            {
+                                worksheet.Cells[indexRowOfMin, indexColumnOfMin].Style.Fill.PatternType = ExcelFillStyle.Solid;
+                                worksheet.Cells[indexRowOfMin, indexColumnOfMin].Style.Fill.BackgroundColor.SetColor(System.Drawing.Color.LightGreen);
+                            }
+                            ++count;
+                        }
+
+                    }
+                    worksheet.Cells[5, indexWriteSymbol2nd + 1, 5 + count, indexWriteSymbol2nd + ReadIniProgram.listGBEBroker.Count].
+                        Style.Border.BorderAround(ExcelBorderStyle.Thick);
+                }               
                 excelPackage.Save();
             }
         }

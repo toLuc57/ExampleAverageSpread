@@ -19,17 +19,8 @@ namespace AvgSpreadsExcelReported
             logConsole.Level = LogLevel.Alert;
 
             logConsole.LogAlert("---");
-            Ini programIni = Ini.ProgramIniFile;
-            DBSpread readDB = new DBSpread(programIni);
-            //logConsole.LogAlert("---");
 
-            //readDB.Query();
-            //logConsole.LogAlert("---");
-
-
-            readDB.GetExcel();
-
-            FormatShellEcxel.CreateExcelFile();
+            FormatShellEcxel reportToday = new FormatShellEcxel();
 
             logConsole.LogAlert("Done");
             Console.ReadLine();

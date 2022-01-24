@@ -12,10 +12,11 @@ namespace AvgSpreadsExcelReported.InformationDB
 {
     class DBSpread : ILogSource 
     {
-        private static IDatabase database;
-        private static ITable<Averagespreads> tAveragespreads;
-        private static ITable<Symbols> tSymbols;
-        private static List<OutputTableOfBroker> listOutputTables = new List<OutputTableOfBroker>();
+        private IDatabase database;
+        private ITable<Averagespreads> tAveragespreads;
+        private ITable<Symbols> tSymbols;
+        private List<OutputTableOfBroker> listOutputTables = new List<OutputTableOfBroker>();
+        private FormatShellEcxel report;
 
         public string LogSourceName
         {
@@ -25,7 +26,7 @@ namespace AvgSpreadsExcelReported.InformationDB
             }
         }
 
-        public DBSpread(Ini programIni)
+        public DBSpread(Ini programIni,FormatShellEcxel report)
         {
             ReadIniProgram.Read(programIni);
             database = Connector.ConnectDatabase(ReadIniProgram.connectionSTR, DbConnectionOptions.AllowCreate);
@@ -41,7 +42,7 @@ namespace AvgSpreadsExcelReported.InformationDB
                     table = database.GetTable<LiveQuote>(TableFlags.AllowCreate,nameTable)                    
                 });
             }
-
+            this.report = report;
             GetSymbolsAndBrokers();
             Query();
         }
@@ -63,9 +64,9 @@ namespace AvgSpreadsExcelReported.InformationDB
 
         private void Query(List<string> listBrokers,TimeSpan[] parameter, int j)
         {
-            DateTime startTime = FormatShellEcxel.date.Date;
+            DateTime startTime = report.date.Date;
             startTime = startTime.Add(parameter[0]);
-            DateTime endTime = FormatShellEcxel.date.Date;
+            DateTime endTime = report.date.Date;
             endTime = endTime.Add(parameter[1]);
 
             //this.LogAlert("======================= {0} ============================", ReadIniProgram.allTimeSpansName[j]);
@@ -100,14 +101,14 @@ namespace AvgSpreadsExcelReported.InformationDB
                 foreach (var row in result)
                 {
                     //this.LogAlert("\t\t {0}\t\t{1}\t\t{2}", row.Symbol, row.Avarage, row.Count);
-                    if (FormatShellEcxel.list[j].Exists(par => par.symbolName == row.Symbol))
+                    if (report.list[j].Exists(par => par.symbolName == row.Symbol))
                     {
-                        FormatShellEcxel.list[j].Find(par => par.symbolName == row.Symbol).brokers.
+                        report.list[j].Find(par => par.symbolName == row.Symbol).brokers.
                             Add(new ValueBrokerOfSymbol(eachBroker, row.Avarage));
                     }
                     else
                     {
-                        FormatShellEcxel.list[j].Add(new FormatRowEcxel(row.Symbol, new ValueBrokerOfSymbol(eachBroker, row.Avarage)));
+                        report.list[j].Add(new FormatRowEcxel(row.Symbol, new ValueBrokerOfSymbol(eachBroker, row.Avarage)));
                     }
                 }
                 //this.LogAlert("\t=== End BrokerName: {0} ===", eachBroker);
@@ -132,18 +133,18 @@ namespace AvgSpreadsExcelReported.InformationDB
             int j = -1;
             foreach (var i in ReadIniProgram.allTimeSpans)
             {
-                Query(FormatShellEcxel.columnsName, i, ++j);
+                Query(report.columnsName, i, ++j);
             }
 
         }
         #endregion
-        private static void GetSymbolsAndBrokers()
+        private void GetSymbolsAndBrokers()
         {
-            FormatShellEcxel.columnsName.AddRange(ReadIniProgram.listGBEBroker);
+            report.columnsName.AddRange(ReadIniProgram.listGBEBroker);
             if (ReadIniProgram.exportNonGBE == true && (ReadIniProgram.otherBroker.Count == 0 || ReadIniProgram.otherBroker == null))
             {
-                DateTime startTime = FormatShellEcxel.date.Date;
-                DateTime endTime = FormatShellEcxel.date.Date.AddDays(1);
+                DateTime startTime = report.date.Date;
+                DateTime endTime = report.date.Date.AddDays(1);
 
                 Search search = Search.FieldGreaterOrEqual(nameof(Averagespreads.TimeStamp), startTime) 
                     & Search.FieldSmallerOrEqual(nameof(Averagespreads.TimeStamp),endTime);
@@ -152,20 +153,20 @@ namespace AvgSpreadsExcelReported.InformationDB
                     search = search & Search.FieldNotEquals(nameof(Averagespreads.BrokerName),i);
                 }
                 var list1 = tAveragespreads.GetStructs(search).GroupBy(par => par.BrokerName).Select(par => par.Key);
-                FormatShellEcxel.columnsName.AddRange(list1);
+                report.columnsName.AddRange(list1);
             }
             else
             {
-                FormatShellEcxel.columnsName.AddRange(ReadIniProgram.otherBroker);
+                report.columnsName.AddRange(ReadIniProgram.otherBroker);
             }
 
             var list = tSymbols.GetStructs().Select(par => par.currencypairname);
-            FormatShellEcxel.rowsName.AddRange(list);
+            report.rowsName.AddRange(list);
         }
         public void GetExcel()
         {
             string informationColumns = "\t";
-            foreach (var str in FormatShellEcxel.columnsName)
+            foreach (var str in report.columnsName)
             {
                 informationColumns += str + "\t";
             }
@@ -174,12 +175,12 @@ namespace AvgSpreadsExcelReported.InformationDB
             for (int i = 0; i < ReadIniProgram.allTimeSpans.Count; ++i)
             {
                 this.LogAlert("-------------{0}---------------", ReadIniProgram.allTimeSpans[i]);
-                foreach (string eachRowName in FormatShellEcxel.rowsName)
+                foreach (string eachRowName in report.rowsName)
                 {
                     string informationValues = eachRowName + ": ";
-                    var eachRow = FormatShellEcxel.list[i].Where(par => par.symbolName.Equals(eachRowName)).FirstOrDefault();
+                    var eachRow = report.list[i].Where(par => par.symbolName.Equals(eachRowName)).FirstOrDefault();
                     bool getYellowFont = true;
-                    foreach (string eachColunmName in FormatShellEcxel.columnsName)
+                    foreach (string eachColunmName in report.columnsName)
                     {
                         var cell = eachRow.brokers.Where(par => par.brokerName == eachColunmName).FirstOrDefault();
                         if(cell == null)
