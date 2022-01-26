@@ -176,15 +176,19 @@ namespace AvgSpreadsExcelReported.InformationDB
             {
                 informationColumns += str + "\t";
             }
-            this.LogAlert(informationColumns);
+            this.LogInfo(informationColumns);
         
             for (int i = 0; i < ReadIniProgram.allTimeSpans.Count; ++i)
             {
-                this.LogAlert("-------------{0}---------------", ReadIniProgram.allTimeSpans[i]);
+                this.LogInfo("-------------{0}---------------", ReadIniProgram.allTimeSpans[i]);
                 foreach (string eachRowName in report.rowsName)
                 {
                     string informationValues = eachRowName + ": ";
                     var eachRow = report.list[i].Where(par => par.symbolName.Equals(eachRowName)).FirstOrDefault();
+                    if (eachRow == null)
+                    {
+                        continue;
+                    }
                     bool getYellowFont = true;
                     foreach (string eachColunmName in report.columnsName)
                     {
@@ -206,7 +210,7 @@ namespace AvgSpreadsExcelReported.InformationDB
                             informationValues += Math.Round(value, 5) + " \t";
                         }
                     }
-                    this.LogAlert(informationValues);
+                    this.LogInfo(informationValues);
                 }
             }
         }

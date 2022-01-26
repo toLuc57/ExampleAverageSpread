@@ -31,10 +31,10 @@ namespace AvgSpreadsExcelReported.InformationDB
 
             Ini programIni = Ini.ProgramIniFile;
             DBSpread readDB = new DBSpread(programIni,this);
-            //logConsole.LogAlert("---");
+            //logConsole.LogInfo("---");
 
             //readDB.Query();
-            //logConsole.LogAlert("---");
+            //logConsole.LogInfo("---");
 
             readDB.GetExcel();
 
@@ -48,10 +48,10 @@ namespace AvgSpreadsExcelReported.InformationDB
 
             Ini programIni = Ini.ProgramIniFile;
             DBSpread readDB = new DBSpread(programIni,this);
-            //logConsole.LogAlert("---");
+            //logConsole.LogInfo("---");
 
             //readDB.Query();
-            //logConsole.LogAlert("---");
+            //logConsole.LogInfo("---");
 
             readDB.GetExcel();
 
@@ -91,8 +91,8 @@ namespace AvgSpreadsExcelReported.InformationDB
                     int countColumnsEqual0 = columnsName.Count == 0 ? 0 : 1;
 
                     worksheet.DefaultColWidth = 12.33;
-                    
-                    worksheet.Cells["a1"].Value = "Average Spread " + date.ToShortDateString() + " " + listHeaderName.ElementAt(k) + " Session";
+                    string formatDate = " " + date.Year + "." + date.Month + "." + date.Day + " ";
+                    worksheet.Cells["a1"].Value = "Average Spread" + formatDate  + listHeaderName.ElementAt(k) + " Session";
                     worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].Merge = true;
                     worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].
                         Style.Font.Bold = true;
@@ -132,7 +132,11 @@ namespace AvgSpreadsExcelReported.InformationDB
                                                 Select(par => par.brokers).FirstOrDefault();
                         worksheet.Cells[i + 6, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
                         worksheet.Cells[i + 6, 1].Style.Font.Bold = true;
-                        
+                        if(listBrokers == null)
+                        {
+                            continue;
+
+                        }
                         for (int j = 0; j < columnsName.Count; ++j)
                         {
                             string brokerNameInExcel = worksheet.Cells[5, 2 + j].Value.ToString();

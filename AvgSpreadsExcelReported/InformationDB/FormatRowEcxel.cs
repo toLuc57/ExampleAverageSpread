@@ -31,7 +31,6 @@ namespace AvgSpreadsExcelReported.InformationDB
                     minValue = i.value;
                 }
             }
-
             return minValue;
         }
         

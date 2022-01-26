@@ -16,13 +16,13 @@ namespace AvgSpreadsExcelReported
             new MySql.Data.MySqlClient.MySqlConnection().Dispose();
             LogConsole logConsole = LogConsole.Create(LogConsoleFlags.DefaultShort);
             logConsole.DateTimeFormat = "dd HH:mm:ss.fff";
-            logConsole.Level = LogLevel.Alert;
+            logConsole.Level = LogLevel.Information;
 
-            logConsole.LogAlert("---");
+            logConsole.LogInfo("---");
+            DateTime date = DateTime.Now.LastDay();
+            FormatShellEcxel reportToday = new FormatShellEcxel(date);
 
-            FormatShellEcxel reportToday = new FormatShellEcxel();
-
-            logConsole.LogAlert("Done");
+            logConsole.LogInfo("Done");
             Console.ReadLine();
         }
     }
