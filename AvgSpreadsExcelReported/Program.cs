@@ -19,8 +19,9 @@ namespace AvgSpreadsExcelReported
             logConsole.Level = LogLevel.Information;
 
             logConsole.LogInfo("---");
-            DateTime date = DateTime.Now.LastDay();
-            FormatShellEcxel reportToday = new FormatShellEcxel(date);
+            DateTime dataToday = DateTime.UtcNow.LastDay();
+            DateTime dateToFile = DateTime.UtcNow;
+            FormatShellEcxel reportToday = new FormatShellEcxel(dataToday,dateToFile);
 
             logConsole.LogInfo("Done");
             Console.ReadLine();

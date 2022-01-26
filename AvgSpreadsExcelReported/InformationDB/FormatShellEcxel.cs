@@ -15,6 +15,7 @@ namespace AvgSpreadsExcelReported.InformationDB
     {
         public DateTime date = new DateTime(2018, 12, 3);
         private string fileName;
+        private DateTime dateToFile = new DateTime(2018, 12, 3);
         public List<string> rowsName = new List<string>();
         public List<string> columnsName = new List<string>();
 
@@ -27,7 +28,7 @@ namespace AvgSpreadsExcelReported.InformationDB
          
         public FormatShellEcxel()
         {
-            fileName = "AverageSpreadsReport_" + date.Year + "." + date.Month + "." + date.Day;
+            fileName = "AverageSpreadsReport_" + dateToFile.ToString("yy.MM.dd");
 
             Ini programIni = Ini.ProgramIniFile;
             DBSpread readDB = new DBSpread(programIni,this);
@@ -41,10 +42,11 @@ namespace AvgSpreadsExcelReported.InformationDB
             CreateExcelFile();
         }
 
-        public FormatShellEcxel(DateTime date)
+        public FormatShellEcxel(DateTime date, DateTime dateToFile)
         {
             this.date = date;
-            fileName = "AverageSpreadsReport_" + date.Year + "." + date.Month + "." + date.Day;
+            this.dateToFile = dateToFile;
+            fileName = "AverageSpreadsReport_ " + dateToFile.ToString("yyyy.MM.dd");
 
             Ini programIni = Ini.ProgramIniFile;
             DBSpread readDB = new DBSpread(programIni,this);
@@ -79,11 +81,9 @@ namespace AvgSpreadsExcelReported.InformationDB
                 {
                     excelPackage.Workbook.Worksheets.Add("Sheet " + i.ToString());
                 }
-                {
-                    excelPackage.Workbook.Worksheets[1].Name = listHeaderName.ElementAt(0) + " Session";
-                    excelPackage.Workbook.Worksheets[2].Name = listHeaderName.ElementAt(1) + " Session";
-                    excelPackage.Workbook.Worksheets[3].Name = listHeaderName.ElementAt(2) + " Session";
-                }
+                excelPackage.Workbook.Worksheets[1].Name = listHeaderName.ElementAt(0) + " Session";
+                excelPackage.Workbook.Worksheets[2].Name = listHeaderName.ElementAt(1) + " Session";
+                excelPackage.Workbook.Worksheets[3].Name = listHeaderName.ElementAt(2) + " Session";
                 for(int k = 0; k < 3; ++k)
                 {
                     var worksheet = excelPackage.Workbook.Worksheets[k+1];
@@ -91,8 +91,7 @@ namespace AvgSpreadsExcelReported.InformationDB
                     int countColumnsEqual0 = columnsName.Count == 0 ? 0 : 1;
 
                     worksheet.DefaultColWidth = 12.33;
-                    string formatDate = " " + date.Year + "." + date.Month + "." + date.Day + " ";
-                    worksheet.Cells["a1"].Value = "Average Spread" + formatDate  + listHeaderName.ElementAt(k) + " Session";
+                    worksheet.Cells["a1"].Value = "Average Spread " + date.ToString("dd.MM.yyyy")+ " " + listHeaderName.ElementAt(k) + " Session";
                     worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].Merge = true;
                     worksheet.Cells[1, 1, 2, 1 + columnsName.Count + 2 + ReadIniProgram.listGBEBroker.Count + 1].
                         Style.Font.Bold = true;
@@ -132,18 +131,19 @@ namespace AvgSpreadsExcelReported.InformationDB
                                                 Select(par => par.brokers).FirstOrDefault();
                         worksheet.Cells[i + 6, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
                         worksheet.Cells[i + 6, 1].Style.Font.Bold = true;
-                        if(listBrokers == null)
-                        {
-                            continue;
 
-                        }
                         for (int j = 0; j < columnsName.Count; ++j)
                         {
+                            worksheet.Cells[i + 6, 2 + j].Style.Border.BorderAround(ExcelBorderStyle.Hair);
+                            worksheet.Cells[i + 6, 2 + j].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                            if(listBrokers == null)
+                            {
+                                continue;
+                            }
                             string brokerNameInExcel = worksheet.Cells[5, 2 + j].Value.ToString();
                             var informationCell = listBrokers.Where(par => par.brokerName.Equals(brokerNameInExcel)).
                                                             Select(par => new { isMin = par.isMin, value = par.value }).FirstOrDefault();
-                            worksheet.Cells[i + 6, 2 + j].Style.Border.BorderAround(ExcelBorderStyle.Hair);
-                            worksheet.Cells[i + 6, 2 + j].Style.Border.Left.Style = ExcelBorderStyle.Thin;
+                            
                             if (informationCell != null)
                             {
                                 worksheet.Cells[i + 6, 2 + j].Style.Numberformat.Format = "0.00";
@@ -249,7 +249,8 @@ namespace AvgSpreadsExcelReported.InformationDB
                     }
                     worksheet.Cells[5, indexWriteSymbol2nd + 1, 5 + count, indexWriteSymbol2nd + ReadIniProgram.listGBEBroker.Count].
                         Style.Border.BorderAround(ExcelBorderStyle.Thick);
-                }               
+                }
+                excelPackage.Workbook.Worksheets.MoveAfter(excelPackage.Workbook.Worksheets[1].Name, excelPackage.Workbook.Worksheets[3].Name);       
                 excelPackage.Save();
             }
         }

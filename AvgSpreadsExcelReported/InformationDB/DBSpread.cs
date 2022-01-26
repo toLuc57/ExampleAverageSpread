@@ -29,10 +29,10 @@ namespace AvgSpreadsExcelReported.InformationDB
         public DBSpread(Ini programIni,FormatShellEcxel report)
         {
             ReadIniProgram.Read(programIni);
-            database = Connector.ConnectDatabase(ReadIniProgram.connectionSTR, DbConnectionOptions.AllowCreate);
-            tAveragespreads = database.GetTable<Averagespreads>(TableFlags.AllowCreate);
-            tSymbols = database.GetTable<Symbols>(TableFlags.AllowCreate);
-            for(int i=0; i < ReadIniProgram.outTables.Count; ++i)
+            database = Connector.ConnectDatabase(ReadIniProgram.connectionSTR, DbConnectionOptions.AllowUnsafeConnections);
+            tAveragespreads = database.GetTable<Averagespreads>(TableFlags.AllowCreate, "AverageSpreads");
+            tSymbols = database.GetTable<Symbols>(TableFlags.AllowCreate, "Symbols");
+            for (int i=0; i < ReadIniProgram.outTables.Count; ++i)
             {
                 string nameTable = ReadIniProgram.outTables.ElementAt(i);
                 string nameBroker = ReadIniProgram.listGBEBroker.ElementAt(i);
@@ -158,12 +158,12 @@ namespace AvgSpreadsExcelReported.InformationDB
                 {
                     search = search & Search.FieldNotEquals(nameof(Averagespreads.BrokerName),i);
                 }
-                var list1 = tAveragespreads.GetStructs(search).GroupBy(par => par.BrokerName).Select(par => par.Key);
+                var list1 = tAveragespreads.GetStructs(search).GroupBy(par => par.BrokerName).Select(par => par.Key).OrderBy(par => par);
                 report.columnsName.AddRange(list1);
             }
             else
             {
-                report.columnsName.AddRange(ReadIniProgram.otherBroker);
+                report.columnsName.AddRange(ReadIniProgram.otherBroker.OrderBy(par=>par));
             }
 
             var list = tSymbols.GetStructs().Select(par => par.currencypairname);
