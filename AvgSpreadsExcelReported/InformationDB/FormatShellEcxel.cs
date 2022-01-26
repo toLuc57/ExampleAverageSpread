@@ -46,7 +46,7 @@ namespace AvgSpreadsExcelReported.InformationDB
         {
             this.date = date;
             this.dateToFile = dateToFile;
-            fileName = "AverageSpreadsReport_ " + dateToFile.ToString("yyyy.MM.dd");
+            fileName = "AverageSpreadsReport_" + dateToFile.ToString("yyyy.MM.dd");
 
             Ini programIni = Ini.ProgramIniFile;
             DBSpread readDB = new DBSpread(programIni,this);
@@ -75,15 +75,17 @@ namespace AvgSpreadsExcelReported.InformationDB
                 {
                     string[] splitString = i.Split('T');
                     string name = splitString[0];
+                    if (name.Equals("US"))
+                    {
+                        name = "New York";
+                    }
                     listHeaderName.Add(name);
                 }
                 for(int i = excelPackage.Workbook.Worksheets.Count; i < 3; ++i)
                 {
                     excelPackage.Workbook.Worksheets.Add("Sheet " + i.ToString());
+                    excelPackage.Workbook.Worksheets[i+1].Name = listHeaderName.ElementAt(i) + " Session";
                 }
-                excelPackage.Workbook.Worksheets[1].Name = listHeaderName.ElementAt(0) + " Session";
-                excelPackage.Workbook.Worksheets[2].Name = listHeaderName.ElementAt(1) + " Session";
-                excelPackage.Workbook.Worksheets[3].Name = listHeaderName.ElementAt(2) + " Session";
                 for(int k = 0; k < 3; ++k)
                 {
                     var worksheet = excelPackage.Workbook.Worksheets[k+1];
@@ -122,13 +124,20 @@ namespace AvgSpreadsExcelReported.InformationDB
 
                         worksheet.Cells[5, i + 2].Style.Border.BorderAround(ExcelBorderStyle.Thin);
                     }
-                    
+                    int rowsHaveValue = rowsName.Count;
                     //Show value (double) in each cell
                     for (int i = 0; i < rowsName.Count; ++i)
                     {
                         string symbolNameInExcel = worksheet.Cells[i + 6, 1].Value.ToString();
                         var listBrokers = list[k].Where(par => par.symbolName.Equals(symbolNameInExcel)).
                                                 Select(par => par.brokers).FirstOrDefault();
+                        if (listBrokers == null)
+                        {
+                            worksheet.Cells[i + 6, 1].Value = "";
+                            --rowsHaveValue;
+                            continue;
+                        }
+                       
                         worksheet.Cells[i + 6, 1].Style.Border.BorderAround(ExcelBorderStyle.Thin);
                         worksheet.Cells[i + 6, 1].Style.Font.Bold = true;
 
@@ -136,10 +145,7 @@ namespace AvgSpreadsExcelReported.InformationDB
                         {
                             worksheet.Cells[i + 6, 2 + j].Style.Border.BorderAround(ExcelBorderStyle.Hair);
                             worksheet.Cells[i + 6, 2 + j].Style.Border.Left.Style = ExcelBorderStyle.Thin;
-                            if(listBrokers == null)
-                            {
-                                continue;
-                            }
+                            
                             string brokerNameInExcel = worksheet.Cells[5, 2 + j].Value.ToString();
                             var informationCell = listBrokers.Where(par => par.brokerName.Equals(brokerNameInExcel)).
                                                             Select(par => new { isMin = par.isMin, value = par.value }).FirstOrDefault();
@@ -157,10 +163,10 @@ namespace AvgSpreadsExcelReported.InformationDB
                             }
                         }
                     }
-                    worksheet.Cells[5, 2, 5 + rowsName.Count, 2 + columnsName.Count - countColumnsEqual0].
+                    worksheet.Cells[5, 2, 5 + rowsHaveValue, 2 + columnsName.Count - countColumnsEqual0].
                                     Style.Border.BorderAround(ExcelBorderStyle.Thick);
                     int countGBEBrokers = ReadIniProgram.listGBEBroker.Count;
-                    worksheet.Cells[5, 2 + countGBEBrokers, 6 + rowsName.Count - countRowsEqual0, 2 + countGBEBrokers].
+                    worksheet.Cells[5, 2 + countGBEBrokers, 6 + rowsHaveValue - countRowsEqual0, 2 + countGBEBrokers].
                                     Style.Border.Left.Style = ExcelBorderStyle.Thick;
 
                     //Show GBEBrokers
@@ -250,7 +256,10 @@ namespace AvgSpreadsExcelReported.InformationDB
                     worksheet.Cells[5, indexWriteSymbol2nd + 1, 5 + count, indexWriteSymbol2nd + ReadIniProgram.listGBEBroker.Count].
                         Style.Border.BorderAround(ExcelBorderStyle.Thick);
                 }
-                excelPackage.Workbook.Worksheets.MoveAfter(excelPackage.Workbook.Worksheets[1].Name, excelPackage.Workbook.Worksheets[3].Name);       
+                if(excelPackage.Workbook.Worksheets[1].Name.Equals("Asian Session"))
+                {
+                    excelPackage.Workbook.Worksheets.MoveAfter("Asian Session", excelPackage.Workbook.Worksheets[3].Name);
+                }
                 excelPackage.Save();
             }
         }

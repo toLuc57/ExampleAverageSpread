@@ -24,7 +24,6 @@ namespace AvgSpreadsExcelReported
             FormatShellEcxel reportToday = new FormatShellEcxel(dataToday,dateToFile);
 
             logConsole.LogInfo("Done");
-            Console.ReadLine();
         }
     }
 }
