@@ -16,7 +16,7 @@ namespace AvgSpreadsExcelReported.InformationDB
         private ITable<Averagespreads> tAveragespreads;
         private ITable<Symbols> tSymbols;
         private List<OutputTableOfBroker> listOutputTables = new List<OutputTableOfBroker>();
-        private FormatShellEcxel report;
+        private FormatShellEcxel report;      
 
         public string LogSourceName
         {
@@ -36,11 +36,8 @@ namespace AvgSpreadsExcelReported.InformationDB
             {
                 string nameTable = ReadIniProgram.outTables.ElementAt(i);
                 string nameBroker = ReadIniProgram.listGBEBroker.ElementAt(i);
-                listOutputTables.Add(new OutputTableOfBroker()
-                {
-                    name = nameBroker,
-                    table = database.GetTable<LiveQuote>(TableFlags.AllowCreate,nameTable)                    
-                });
+                ITable<LiveQuote> table = database.GetTable<LiveQuote>(TableFlags.AllowCreate, nameTable);
+                listOutputTables.Add(new OutputTableOfBroker(nameBroker, table));
             }
             this.report = report;
             GetSymbolsAndBrokers();
@@ -100,6 +97,15 @@ namespace AvgSpreadsExcelReported.InformationDB
 
                 foreach (var row in result)
                 {
+                    if (ReadIniProgram.listGBEBroker.Contains(eachBroker))
+                    {
+                        var outputListInTable = listOutputTables.Where(par => par.name.Equals(eachBroker)).FirstOrDefault();
+                        if (outputListInTable != null)
+                        {
+                            outputListInTable.setValueOfSymbol(row.Symbol,row.Avarage);
+                        }
+                    }
+
                     //this.LogAlert("\t\t {0}\t\t{1}\t\t{2}", row.Symbol, row.Avarage, row.Count);
                     if (report.list[j].Exists(par => par.symbolName == row.Symbol))
                     {
@@ -198,23 +204,6 @@ namespace AvgSpreadsExcelReported.InformationDB
                         else
                         {
                             informationValues += Math.Round(value, 5) + " \t";
-                        }
-
-                        if (ReadIniProgram.listGBEBroker.Contains(cell.brokerName))
-                        {
-                            var updateTable = listOutputTables.Where(par => par.name.Equals(cell.brokerName)).
-                                                                                    Select(par => par.table).First();
-                            
-                            if(updateTable.Exist(nameof(LiveQuote.Symbol), eachRow.symbolName))
-                            {
-                                var updateRow = updateTable.GetStruct(nameof(LiveQuote.Symbol), eachRow.symbolName);
-                                if(updateRow.SpreadAvg > value)
-                                {
-                                    updateRow.SpreadAvg = value;
-                                    updateRow.TimeStamp = DateTime.Now;
-                                    updateTable.Update(updateRow);                                    
-                                }
-                            }
                         }
                     }
                     this.LogAlert(informationValues);

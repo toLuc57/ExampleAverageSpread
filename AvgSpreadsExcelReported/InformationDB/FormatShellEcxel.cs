@@ -24,6 +24,7 @@ namespace AvgSpreadsExcelReported.InformationDB
                 new List<FormatRowEcxel>(),
                 new List<FormatRowEcxel>()
             };
+         
         public FormatShellEcxel()
         {
             fileName = "AverageSpreadsReport_" + date.Year + "." + date.Month + "." + date.Day;
@@ -59,7 +60,12 @@ namespace AvgSpreadsExcelReported.InformationDB
 
         public void CreateExcelFile()
         {
-            var file = new FileInfo("reports//"+ fileName + ".xlsx");
+            var file = new FileInfo("reports\\"+ fileName + ".xlsx");
+            string path = Directory.GetCurrentDirectory() + "\\reports";
+            if (!Directory.Exists(path))
+            {
+                Directory.CreateDirectory(path);
+            }
             using (var excelPackage = new ExcelPackage(file))
             {
                 List<string> listHeaderName = new List<string>();
